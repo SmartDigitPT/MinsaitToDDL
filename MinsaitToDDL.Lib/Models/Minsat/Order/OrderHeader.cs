@@ -25,12 +25,6 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Order
         [XmlElement("OtherOrderDates")]
         public OtherOrderDates OtherOrderDates { get; set; }
 
-        [XmlElement("PaymentInstructions")]
-        public PaymentInstructions PaymentInstructions { get; set; }
-
-        [XmlElement(ElementName = "HeaderTaxes")]
-        public HeaderTaxes HeaderTaxes { get; set; }
-
         [XmlElement("BuyerInformation")]
         public Common.Party BuyerInformation { get; set; }
 
@@ -42,5 +36,11 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Order
 
         [XmlElement("BillToPartyInformation")]
         public Common.Party BillToPartyInformation { get; set; }
+
+        [XmlElement("PaymentInstructions")]
+        public PaymentInstructions PaymentInstructions { get; set; }
+
+        [XmlElement(ElementName = "HeaderTaxes")]
+        public HeaderTaxes HeaderTaxes { get; set; }
     }
 }

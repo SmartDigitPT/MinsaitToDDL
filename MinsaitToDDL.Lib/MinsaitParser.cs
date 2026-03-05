@@ -5,8 +5,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 using System.Xml.Linq;
+using System.Xml.Schema;
 
 namespace MinsaitToDDL.Lib
 {
@@ -24,9 +24,12 @@ namespace MinsaitToDDL.Lib
             };
         }
 
-        public ItemTransaction Parse(string xml, Enums.Enums.DocumentType documentType)
+        public ItemTransaction Parse(string xml, Enums.Enums.DocumentType documentType, byte[] xsdBytes)
         {
             var doc = XDocument.Parse(xml);
+
+            ValidateXmlAgainstXsd(doc, xsdBytes);
+
             var root = doc.Root;
 
             switch (documentType)
@@ -84,14 +87,46 @@ namespace MinsaitToDDL.Lib
 
             return null;
         }
-
-        public string MapToXmlFromJson(string json, Enums.Enums.DocumentType documentType)
+            
+        public Tuple<bool, string, string> MapToXmlFromJson(string json, Enums.Enums.DocumentType documentType, byte[] xsdBytes)
         {
-            var transaction = JsonConvert.DeserializeObject<ItemTransaction>(json);
-            if (transaction == null)
-                throw new ArgumentException("Invalid JSON for ItemTransaction.", nameof(json));
+            var xml = string.Empty;
 
-            return MapToXml(transaction, documentType);
+            try
+            {
+                var transaction = JsonConvert.DeserializeObject<ItemTransaction>(json);
+                if (transaction == null)
+                    throw new ArgumentException("Invalid JSON for ItemTransaction.", nameof(json));
+
+                xml = MapToXml(transaction, documentType);
+
+                if (xsdBytes != null)
+                    ValidateXmlAgainstXsd(XDocument.Parse(xml), xsdBytes);
+            }
+            catch (Exception ex)
+            {
+                return Tuple.Create(false, string.Empty, ex.Message);
+            }
+
+            return Tuple.Create(true, xml, string.Empty);
+        }
+
+        private static void ValidateXmlAgainstXsd(XDocument doc, byte[] xsdBytes)
+        {
+            using (var ms = new System.IO.MemoryStream(xsdBytes))
+            using (var reader = System.Xml.XmlReader.Create(ms))
+            {
+                var schemas = new XmlSchemaSet();
+                schemas.Add(null, reader);
+                string validationErrors = string.Empty;
+                doc.Validate(schemas, (o, e) => {
+                    validationErrors += e.Message + "\n";
+                });
+                if (!string.IsNullOrEmpty(validationErrors))
+                {
+                    throw new InvalidOperationException("XML validation against XSD failed: " + validationErrors);
+                }
+            }
         }
     }
 }

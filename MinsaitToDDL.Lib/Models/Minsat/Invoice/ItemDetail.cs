@@ -20,8 +20,8 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Invoice
         [XmlElement(ElementName = "SellerPartNumber")]
         public string SellerPartNumber { get; set; }
 
-        [XmlElement(ElementName = "ItemDescriptions")]
-        public ItemDescriptions ItemDescriptions { get; set; }
+        [XmlElement(ElementName = "ItemDescription")]
+        public string ItemDescription { get; set; }
 
         [XmlElement(ElementName = "Quantity")]
         public Quantity Quantity { get; set; }

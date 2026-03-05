@@ -99,7 +99,7 @@ namespace MinsaitToDDL.Console
         {
             System.Console.WriteLine("\n=== Parsing Minsait XML -> DDL ===");
 
-            var itemTransaction = minsaitParser.Parse(xmlSample);
+            var itemTransaction = minsaitParser.Parse(xmlSample, Lib.Enums.Enums.DocumentType.INVOICE, Properties.Resources.MinsaitInvoiveXsd);
 
             var json = JsonConvert.SerializeObject(
                 itemTransaction,
@@ -122,7 +122,7 @@ namespace MinsaitToDDL.Console
         {
             System.Console.WriteLine("\n=== Parsing Minsait XML -> DDL -> XML ===");
 
-            var itemTransaction = minsaitParser.Parse(xmlSample);
+            var itemTransaction = minsaitParser.Parse(xmlSample, Lib.Enums.Enums.DocumentType.INVOICE, Properties.Resources.MinsaitInvoiveXsd);
 
             var ddlJson = JsonConvert.SerializeObject(
                 itemTransaction,

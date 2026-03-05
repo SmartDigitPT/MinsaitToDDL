@@ -5,7 +5,10 @@ using MinsaitToDDL.Lib.Models.Minsait.Invoice;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace MinsaitToDDL.Lib.Parsers
@@ -37,10 +40,19 @@ namespace MinsaitToDDL.Lib.Parsers
             var document = mapper.Map<Invoice>(transaction);
 
             var serializer = new XmlSerializer(typeof(Invoice));
-            using (var writer = new StringWriter())
+
+            var settings = new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(false), // sem BOM
+                Indent = true
+            };
+
+            using (var stream = new MemoryStream())
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 serializer.Serialize(writer, document);
-                return writer.ToString();
+
+                return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
 
@@ -94,8 +106,10 @@ namespace MinsaitToDDL.Lib.Parsers
                     //    o => o.MapFrom(s => s.ActualDeliveryDate))
                     //.ForPath(d => d.InvoiceHeader.DocType,
                     //    o => o.MapFrom(_ => "221"))
+                    .ForPath(d => d.InvoiceHeader.TypeOfDocument,
+                        o => o.MapFrom(_ => "380"))
                     .ForPath(d => d.InvoiceHeader.InvoiceType,
-                        o => o.MapFrom(_ => "90"))
+                        o => o.MapFrom(_ => "9"))
                     .ForPath(d => d.InvoiceHeader.InvoiceCurrency,
                         o => o.MapFrom(_ => "EUR"))
                     //.ForPath(d => d.InvoiceHeader.PaymentInstructions.PaymentTerm,
@@ -126,6 +140,31 @@ namespace MinsaitToDDL.Lib.Parsers
             return config.CreateMapper();
         }
 
+        public ItemTransaction Parse(string xml, byte[] xsdBytes)
+        {
+            ValidateXmlAgainstXsd(xml, xsdBytes);
+            return Parse(xml);
+        }
+
+        private static void ValidateXmlAgainstXsd(string xml, byte[] xsdBytes)
+        {
+            var doc = XDocument.Parse(xml);
+            using (var ms = new MemoryStream(xsdBytes))
+            using (var reader = System.Xml.XmlReader.Create(ms))
+            {
+                var schemas = new XmlSchemaSet();
+                schemas.Add(null, reader);
+                string validationErrors = string.Empty;
+                doc.Validate(schemas, (o, e) => {
+                    validationErrors += e.Message + "\n";
+                });
+                if (!string.IsNullOrEmpty(validationErrors))
+                {
+                    throw new InvalidOperationException("XML validation against XSD failed: " + validationErrors);
+                }
+            }
+        }
+
         #region "Forward"
 
         private static Party MapParty(Models.Minsait.Common.Party party)
@@ -152,7 +191,7 @@ namespace MinsaitToDDL.Lib.Parsers
                     ItemID = i.StandardPartNumber,
                     //BuyerItemID = i.BuyerPartNumber,
                     SupplierItemID = i.SellerPartNumber,
-                    Description = i.ItemDescriptions?.Description,
+                    Description = i.ItemDescription,
                     Quantity = (double?)i.Quantity?.QuantityValue,
                     UnitPrice = i.Price?.NetPrice,
                     TotalNetAmount = i.MonetaryAmount
@@ -208,12 +247,7 @@ namespace MinsaitToDDL.Lib.Parsers
                     BuyerPartNumber = d.ItemID,
                     SellerPartNumber = d.Description,
 
-                    ItemDescriptions = d.Description != null
-                        ? new Models.Minsait.Common.ItemDescriptions
-                        {
-                            Description = d.Description
-                        }
-                        : null,
+                    ItemDescription = d.Description,
                     Quantity = d.Quantity != null
                         ? new Models.Minsait.Common.Quantity
                         {
@@ -225,7 +259,6 @@ namespace MinsaitToDDL.Lib.Parsers
                         {
                             NetPrice = (d.UnitPrice != null ? d.UnitPrice.Value : 0),
                             GrossPrice = (d.TaxIncludedPrice != null ? d.TaxIncludedPrice.Value : 0),
-                            PVP = (d.TaxIncludedPrice != null ? d.TaxIncludedPrice.Value : 0),
                             PriceBasisQuantity = (d.Quantity != null ? d.Quantity.Value : 0),
                         }
                         : null,

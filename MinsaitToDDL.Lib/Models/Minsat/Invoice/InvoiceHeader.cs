@@ -10,14 +10,17 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Invoice
         [XmlElement("InvoiceNumber")]
         public string InvoiceNumber { get; set; }
 
+        [XmlElement("TypeOfDocument")]
+        public string TypeOfDocument { get; set; } = "380";
+
+        [XmlElement("InvoiceType")]
+        public string InvoiceType { get; set; } = "9";
+
         [XmlElement("InvoiceDate")]
         public DateTime InvoiceDate { get; set; }
 
         //[XmlElement("DocType")]
         //public string DocType { get; set; } = "221";
-
-        [XmlElement("InvoiceType")]
-        public string InvoiceType { get; set; } = "9";
 
         [XmlElement("InvoiceCurrency")]
         public string InvoiceCurrency { get; set; } = "EUR";

@@ -14,5 +14,15 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Invoice
 
         [XmlElement("InvoiceDueDays")]
         public int? InvoiceDueDays { get; set; }
+
+        public bool ShouldSerializeInvoiceDueDate()
+        {
+            return InvoiceDueDate.HasValue;
+        }
+
+        public bool ShouldSerializeInvoiceDueDays()
+        {
+            return InvoiceDueDays.HasValue;
+        }
     }
 }

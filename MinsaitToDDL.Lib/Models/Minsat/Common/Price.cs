@@ -11,9 +11,6 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Common
         [XmlElement(ElementName = "GrossPrice")]
         public double GrossPrice { get; set; }
 
-        [XmlElement(ElementName = "PVP")]
-        public double PVP { get; set; }
-
         [XmlElement(ElementName = "PriceBasisQuantity")]
         public double PriceBasisQuantity { get; set; }
     }
