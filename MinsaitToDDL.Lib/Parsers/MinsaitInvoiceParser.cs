@@ -259,7 +259,7 @@ namespace MinsaitToDDL.Lib.Parsers
                         {
                             NetPrice = (d.UnitPrice != null ? d.UnitPrice.Value : 0),
                             GrossPrice = (d.TaxIncludedPrice != null ? d.TaxIncludedPrice.Value : 0),
-                            PriceBasisQuantity = (d.Quantity != null ? d.Quantity.Value : 0),
+                            //PriceBasisQuantity = (d.Quantity != null ? d.Quantity.Value : 0),
                         }
                         : null,
                     MonetaryAmount = (d.TotalGrossAmount != null ? d.TotalGrossAmount.Value : 0),
