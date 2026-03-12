@@ -64,9 +64,13 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForMember(d => d.Party,
                         o => o.MapFrom(s => MapParty(s.OrderHeader.BuyerInformation)))
                     .ForMember(d => d.PartyGLN,
-                    o => o.MapFrom(s => s.OrderHeader != null && s.OrderHeader.BuyerInformation != null
-                        ? s.OrderHeader.BuyerInformation.EANCode
-                        : null))
+                        o => o.MapFrom(s => s.OrderHeader != null && s.OrderHeader.BuyerInformation != null
+                            ? s.OrderHeader.BuyerInformation.EANCode
+                            : null))
+                    .ForMember(d => d.PartyFederalTaxID,
+                        o => o.MapFrom(s => s.OrderHeader != null && s.OrderHeader.BuyerInformation != null
+                            ? s.OrderHeader.BuyerInformation.NIF
+                            : null))
                     .ForMember(d => d.SupplierParty,
                         o => o.MapFrom(s => MapParty(s.OrderHeader.SellerInformation)))
                     //.ForMember(d => d.LoadPlaceAddress,
@@ -110,13 +114,13 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForPath(d => d.OrderSummary.OrderTotals.GrossValue,
                         o => o.MapFrom(s => s.TotalAmount))
                     .ForPath(d => d.OrderHeader.BuyerInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.Party, s.PartyGLN)))
+                        o => o.MapFrom(s => MapPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.OrderHeader.SellerInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.LoadPlaceAddress.GLN)))
+                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.LoadPlaceAddress.GLN, s.PartyFederalTaxID)))
                     .ForPath(d => d.OrderHeader.DeliveryPlaceInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN)))
+                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.OrderHeader.BillToPartyInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN)))
+                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.OrderHeader.HeaderTaxes,
                         o => o.MapFrom(s => MapOrderHeaderTaxesReverse(s.Taxes)))
                     .ForPath(d => d.OrderDetail.ItemDetails,
@@ -135,6 +139,7 @@ namespace MinsaitToDDL.Lib.Parsers
             return new Party
             {
                 GLN = party.EANCode,
+                FederalTaxID = party.NIF,
                 // Add other mappings if needed
             };
         }
@@ -182,13 +187,14 @@ namespace MinsaitToDDL.Lib.Parsers
 
         #region "Reverse"
 
-        private static Models.Minsait.Common.Party MapPartyReverse(Party party, string partyGLN)
+        private static Models.Minsait.Common.Party MapPartyReverse(Party party, string partyGLN, string federalTaxID)
         {
             //if (party == null) return null;
 
             return new Models.Minsait.Common.Party
             {
                 EANCode = partyGLN,
+                NIF = federalTaxID,
                 // InternalCode = party.PartyID,
                 // Department = party.Department
             };

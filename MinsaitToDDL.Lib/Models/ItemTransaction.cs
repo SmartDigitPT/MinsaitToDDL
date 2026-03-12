@@ -447,7 +447,7 @@ namespace MinsaitToDDL.Lib.Models
         public string PartyFederalTaxID;
 
         [JsonProperty("BillToPartyFederalTaxID")]
-        public object BillToPartyFederalTaxID;
+        public string BillToPartyFederalTaxID;
 
         [JsonProperty("PartyFiscalStatus")]
         public double? PartyFiscalStatus;

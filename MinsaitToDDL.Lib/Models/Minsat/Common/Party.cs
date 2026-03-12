@@ -12,8 +12,9 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Common
 
         [XmlElement("InternalCode")]
         public string InternalCode { get; set; }
-        //[XmlElement("NIF")]
-        //public string NIF { get; set; }
+
+        [XmlElement("NIF")]
+        public string NIF { get; set; }
 
         //[XmlElement("Name")]
         //public string Name { get; set; }
