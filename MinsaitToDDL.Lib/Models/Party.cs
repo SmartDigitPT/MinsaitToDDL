@@ -372,7 +372,11 @@ namespace MinsaitToDDL.Lib.Models
 
         [JsonProperty("$Type")]
         public string Type;
+
+        [JsonProperty("CapSoc")]
+        public string CapSoc;
+
+        [JsonProperty("NRCC")]
+        public string NRCC;
     }
-
-
 }

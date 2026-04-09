@@ -72,10 +72,10 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.InvoiceSummary.InvoiceTotals.NetValue))
                     .ForMember(d => d.TotalAmount,
                         o => o.MapFrom(s => s.InvoiceSummary.InvoiceTotals.GrossValue))
-                    .ForMember(d => d.Party,
-                        o => o.MapFrom(s => MapParty(s.InvoiceHeader.BuyerInformation)))
-                    .ForMember(d => d.Party,
-                        o => o.MapFrom(s => MapParty(s.InvoiceHeader.BillToPartyInformation)))
+                    //.ForMember(d => d.Party,
+                    //    o => o.MapFrom(s => MapParty(s.InvoiceHeader.BuyerInformation)))
+                    //.ForMember(d => d.Party,
+                    //    o => o.MapFrom(s => MapParty(s.InvoiceHeader.BillToPartyInformation)))
                     .ForMember(d => d.PartyGLN,
                         o => o.MapFrom(s => s.InvoiceHeader != null && s.InvoiceHeader.BuyerInformation != null
                             ? s.InvoiceHeader.BuyerInformation.EANCode
@@ -92,22 +92,15 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.InvoiceHeader != null && s.InvoiceHeader.BillToPartyInformation != null
                             ? s.InvoiceHeader.BillToPartyInformation.NIF
                             : null))
+                    .ForMember(d => d.Party,
+                        o => o.MapFrom(s => MapPartyBuyer(s.InvoiceHeader.BuyerInformation, s.InvoiceHeader.BuyerInformation.EANCode, s.InvoiceHeader.BuyerInformation.NIF)))
+                    //.ForMember(d => d.BillToParty,
+                    //    o => o.MapFrom(s => MapPartyBillToParty(s.InvoiceHeader.BillToPartyInformation, s.InvoiceHeader.BillToPartyInformation.EANCode, s.InvoiceHeader.BillToPartyInformation.NIF)))
                     .ForMember(d => d.SupplierParty,
-                        o => o.MapFrom(s => MapParty(s.InvoiceHeader.SellerInformation)))
-                    //.ForMember(d => d.LoadPlaceAddress,
-                    //    o => o.MapFrom(s => MapParty(s.InvoiceHeader.DeliveryPlaceInformation)))
+                        o => o.MapFrom(s => MapPartySupplier(s.InvoiceHeader.SellerInformation, s.InvoiceHeader.SellerInformation.EANCode, s.InvoiceHeader.SellerInformation.NIF)))
                     .ForMember(d => d.Details,
                         o => o.MapFrom(s => MapInvoiceLines(
                             s.InvoiceDetail != null ? s.InvoiceDetail.ItemDetails : null)))
-                    //.ForMember(d => d.Taxes,
-                    //    o => o.MapFrom(s => s.InvoiceHeader != null
-                    //        && s.InvoiceHeader.HeaderTaxes != null
-                    //        && s.InvoiceHeader.HeaderTaxes.HeaderTaxesHeader != null
-                    //        ? s.InvoiceHeader.HeaderTaxes.HeaderTaxesHeader.ConvertAll(
-                    //            h => new TaxValue { TaxRate = h.TaxPercent })
-                    //        : null))
-                    //.ForMember(d => d.Payment,
-                    //    o => o.MapFrom(s => MapPayment(s.InvoiceHeader)))
                     .ForAllOtherMembers(o => o.Ignore());
 
                 // ItemTransaction → Invoice (already present)
@@ -116,18 +109,12 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.CreateDate))
                     .ForPath(d => d.InvoiceHeader.OtherInvoiceDates.DeliveryDate,
                         o => o.MapFrom(s => s.ActualDeliveryDate))
-                    //.ForPath(d => d.InvoiceHeader.OtherInvoiceDates.LastAcceptableDeliveryDate,
-                    //    o => o.MapFrom(s => s.ActualDeliveryDate))
-                    //.ForPath(d => d.InvoiceHeader.DocType,
-                    //    o => o.MapFrom(_ => "221"))
                     .ForPath(d => d.InvoiceHeader.TypeOfDocument,
                         o => o.MapFrom(_ => "380"))
                     .ForPath(d => d.InvoiceHeader.InvoiceType,
                         o => o.MapFrom(_ => "9"))
                     .ForPath(d => d.InvoiceHeader.InvoiceCurrency,
                         o => o.MapFrom(_ => "EUR"))
-                    //.ForPath(d => d.InvoiceHeader.PaymentInstructions.PaymentTerm,
-                    //    o => o.MapFrom(s => ((int)s.Payment.PaymentDays).ToString()))
                     .ForPath(d => d.InvoiceHeader.InvoiceNumber,
                         o => o.MapFrom(s => s.ISignableTransactionTransactionID))
                     .ForPath(d => d.InvoiceSummary.NumberOfLines,
@@ -137,17 +124,11 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForPath(d => d.InvoiceSummary.InvoiceTotals.GrossValue,
                         o => o.MapFrom(s => s.TotalAmount))
                     .ForPath(d => d.InvoiceHeader.BuyerInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
+                        o => o.MapFrom(s => MapPartyBuyerReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.InvoiceHeader.BillToPartyInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
+                        o => o.MapFrom(s => MapPartyBillToPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.InvoiceHeader.SellerInformation,
-                        o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.LoadPlaceAddress.GLN, s.PartyFederalTaxID)))
-                    //.ForPath(d => d.InvoiceHeader.DeliveryPlaceInformation,
-                    //    o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN)))
-                    //.ForPath(d => d.InvoiceHeader.BillToPartyInformation,
-                    //    o => o.MapFrom(s => MapPartyReverse(s.SupplierParty, s.PartyGLN)))
-                    //.ForPath(d => d.InvoiceHeader.HeaderTaxes,
-                    //    o => o.MapFrom(s => MapInvoiceHeaderTaxesReverse(s.Taxes)))
+                        o => o.MapFrom(s => MapPartySupplierReverse(s.SupplierParty, s.LoadPlaceAddress.GLN, s.PartyFederalTaxID)))
                     .ForPath(d => d.InvoiceDetail.ItemDetails,
                         o => o.MapFrom(s => MapInvoiceLinesReverse(s.Details)))
                     .ForAllOtherMembers(o => o.Ignore());
@@ -183,15 +164,51 @@ namespace MinsaitToDDL.Lib.Parsers
 
         #region "Forward"
 
-        private static Party MapParty(Models.Minsait.Common.Party party)
+        private static Party MapPartyBuyer(Models.Minsait.Common.Party minsaitParty, string partyGLN, string federalTaxID)
         {
-            if (party == null) return null;
+            if (minsaitParty == null) return null;
 
             return new Party
             {
-                GLN = party.EANCode,
-                FederalTaxID = party.NIF,
-                // Add other mappings if needed
+                GLN = partyGLN,
+                OrganizationName = minsaitParty.Name,
+                AddressLine1 = minsaitParty.Street,
+                PostalCode = minsaitParty.PostalCode,
+                CountryID = minsaitParty.Country,
+                // Add other mappings as needed
+            };
+        }
+
+        private static Party MapPartyBillToParty(Models.Minsait.Common.Party minsaitParty, string partyGLN, string federalTaxID)
+        {
+            if (minsaitParty == null) return null;
+
+            return new Party
+            {
+                PartyID = !string.IsNullOrEmpty(minsaitParty.InternalCode) && double.TryParse(minsaitParty.InternalCode, out var partyId) ? (double?)partyId : null,
+                GLN = partyGLN,
+                OrganizationName = minsaitParty.Name,
+                AddressLine1 = minsaitParty.Street,
+                PostalCode = minsaitParty.PostalCode,
+                CountryID = minsaitParty.Country,
+                // Add other mappings as needed
+            };
+        }
+
+        private static Party MapPartySupplier(Models.Minsait.Common.Party minsaitParty, string partyGLN, string federalTaxID)
+        {
+            if (minsaitParty == null) return null;
+
+            return new Party
+            {
+                GLN = partyGLN,
+                OrganizationName = minsaitParty.Name,
+                AddressLine1 = minsaitParty.Street,
+                PostalCode = minsaitParty.PostalCode,
+                CountryID = minsaitParty.Country,
+                CapSoc = minsaitParty.CapSoc,
+                NRCC = minsaitParty.NRCC,
+                // Add other mappings as needed
             };
         }
 
@@ -238,16 +255,55 @@ namespace MinsaitToDDL.Lib.Parsers
 
         #region "Reverse"
 
-        private static Models.Minsait.Common.Party MapPartyReverse(Party party, string partyGLN, string federalTaxID)
+        private static Models.Minsait.Common.Party MapPartyBuyerReverse(Party party, string partyGLN, string federalTaxID)
         {
-            //if (party == null) return null;
+            if (party == null) return null;
+
+            return new Models.Minsait.Common.Party
+            {
+                EANCode = partyGLN,
+                Name = party.OrganizationName,
+                Street = party.AddressLine1,
+                PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
+                City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
+                Country = party.CountryID,
+                //Department = party.Department
+            };
+        }
+
+        private static Models.Minsait.Common.Party MapPartyBillToPartyReverse(Party party, string partyGLN, string federalTaxID)
+        {
+            if (party == null) return null;
+
+            return new Models.Minsait.Common.Party
+            {
+                EANCode = partyGLN,
+                InternalCode = party.PartyID.HasValue ? party.PartyID.Value.ToString() : null,
+                NIF = federalTaxID,
+                Name = party.OrganizationName,
+                Street = party.AddressLine1,
+                PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
+                City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
+                Country = party.CountryID,
+                //Department = party.Department
+            };
+        }
+
+        private static Models.Minsait.Common.Party MapPartySupplierReverse(Party party, string partyGLN, string federalTaxID)
+        {
+            if (party == null) return null;
 
             return new Models.Minsait.Common.Party
             {
                 EANCode = partyGLN,
                 NIF = federalTaxID,
-                // InternalCode = party.PartyID,
-                // Department = party.Department
+                Name = party.OrganizationName,
+                Street = party.AddressLine1,
+                PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
+                City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
+                Country = party.CountryID,
+                CapSoc = party.CapSoc,
+                NRCC = party.NRCC,
             };
         }
 
