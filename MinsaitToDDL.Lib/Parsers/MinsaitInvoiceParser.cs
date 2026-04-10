@@ -124,7 +124,7 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForPath(d => d.InvoiceSummary.InvoiceTotals.GrossValue,
                         o => o.MapFrom(s => s.TotalAmount))
                     .ForPath(d => d.InvoiceHeader.BuyerInformation,
-                        o => o.MapFrom(s => MapPartyBuyerReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
+                        o => o.MapFrom(s => MapPartyBuyerReverse(s.Party, s.PartyGLN, s.PartyDelivery)))
                     .ForPath(d => d.InvoiceHeader.BillToPartyInformation,
                         o => o.MapFrom(s => MapPartyBillToPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.InvoiceHeader.SellerInformation,
@@ -175,7 +175,6 @@ namespace MinsaitToDDL.Lib.Parsers
                 AddressLine1 = minsaitParty.Street,
                 PostalCode = minsaitParty.PostalCode,
                 CountryID = minsaitParty.Country,
-                // Add other mappings as needed
             };
         }
 
@@ -191,7 +190,6 @@ namespace MinsaitToDDL.Lib.Parsers
                 AddressLine1 = minsaitParty.Street,
                 PostalCode = minsaitParty.PostalCode,
                 CountryID = minsaitParty.Country,
-                // Add other mappings as needed
             };
         }
 
@@ -208,7 +206,6 @@ namespace MinsaitToDDL.Lib.Parsers
                 CountryID = minsaitParty.Country,
                 CapSoc = minsaitParty.CapSoc,
                 NRCC = minsaitParty.NRCC,
-                // Add other mappings as needed
             };
         }
 
@@ -255,7 +252,7 @@ namespace MinsaitToDDL.Lib.Parsers
 
         #region "Reverse"
 
-        private static Models.Minsait.Common.Party MapPartyBuyerReverse(Party party, string partyGLN, string federalTaxID)
+        private static Models.Minsait.Common.Party MapPartyBuyerReverse(Party party, string partyGLN, string partyDelivery)
         {
             if (party == null) return null;
 
@@ -267,7 +264,7 @@ namespace MinsaitToDDL.Lib.Parsers
                 PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
                 City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
                 Country = party.CountryID,
-                //Department = party.Department
+                Department = partyDelivery
             };
         }
 
@@ -285,7 +282,6 @@ namespace MinsaitToDDL.Lib.Parsers
                 PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
                 City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
                 Country = party.CountryID,
-                //Department = party.Department
             };
         }
 
