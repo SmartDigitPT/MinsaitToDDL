@@ -1,6 +1,4 @@
-﻿using MinsaitToDDL.Lib.Models.Minsait.Common;
-using MinsaitToDDL.Lib.Models.Minsait.Invoice;
-using System;
+﻿using System;
 using System.Xml.Serialization;
 
 namespace MinsaitToDDL.Lib.Models.Minsait.Invoice
@@ -40,10 +38,10 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Invoice
         [XmlElement("SellerInformation")]
         public Common.Party SellerInformation { get; set; }
 
-        //[XmlElement("DeliveryPlaceInformation")]
-        //public Party DeliveryPlaceInformation { get; set; }
-
         [XmlElement("BillToPartyInformation")]
         public Common.Party BillToPartyInformation { get; set; }
+
+        [XmlElement("DeliveryPlaceInformation")]
+        public Common.Party DeliveryPlaceInformation { get; set; }
     }
 }

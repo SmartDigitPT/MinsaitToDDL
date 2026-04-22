@@ -10,5 +10,11 @@ namespace MinsaitToDDL.Lib.Models.Minsait.Common
 
         [XmlElement(ElementName = "TaxPercent")]
         public double TaxPercent { get; set; }
+
+        [XmlElement(ElementName = "TaxableAmount")]
+        public double TaxableAmount { get; set; }
+
+        [XmlElement(ElementName = "TaxAmount")]
+        public double TaxAmount { get; set; }
     }
 }

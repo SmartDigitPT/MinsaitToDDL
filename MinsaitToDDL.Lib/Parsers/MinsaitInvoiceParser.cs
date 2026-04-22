@@ -123,14 +123,24 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.TotalGrossAmount))
                     .ForPath(d => d.InvoiceSummary.InvoiceTotals.GrossValue,
                         o => o.MapFrom(s => s.TotalAmount))
+                    .ForPath(d => d.InvoiceSummary.InvoiceTotals.TotalTaxAmount,
+                        o => o.MapFrom(s => SumTaxes(s.Taxes)))
+                    .ForPath(d => d.InvoiceSummary.InvoiceTotals.TotalAmountPayable,
+                        o => o.MapFrom(s => (decimal)(s.TotalGrossAmount ?? 0) + SumTaxes(s.Taxes)))
+                    .ForPath(d => d.InvoiceSummary.InvoiceTotals.TotalTaxableAmount,
+                        o => o.MapFrom(s => s.TotalGrossAmount))
                     .ForPath(d => d.InvoiceHeader.BuyerInformation,
                         o => o.MapFrom(s => MapPartyBuyerReverse(s.Party, s.PartyGLN, s.PartyDelivery)))
                     .ForPath(d => d.InvoiceHeader.BillToPartyInformation,
                         o => o.MapFrom(s => MapPartyBillToPartyReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
+                    .ForPath(d => d.InvoiceHeader.DeliveryPlaceInformation,
+                        o => o.MapFrom(s => MapDeliveryPlaceInformationReverse(s.Party, s.PartyGLN, s.BillToPartyFederalTaxID)))
                     .ForPath(d => d.InvoiceHeader.SellerInformation,
                         o => o.MapFrom(s => MapPartySupplierReverse(s.SupplierParty, s.LoadPlaceAddress.GLN, s.PartyFederalTaxID)))
                     .ForPath(d => d.InvoiceDetail.ItemDetails,
                         o => o.MapFrom(s => MapInvoiceLinesReverse(s.Details)))
+                    .ForPath(d => d.InvoiceSummary.SummaryTaxes,
+                        o => o.MapFrom(s => MapInvoiceSummaryTaxesReverse(s.Taxes)))
                     .ForAllOtherMembers(o => o.Ignore());
             });
 
@@ -267,7 +277,7 @@ namespace MinsaitToDDL.Lib.Parsers
                 Department = partyDelivery
             };
         }
-
+        
         private static Models.Minsait.Common.Party MapPartyBillToPartyReverse(Party party, string partyGLN, string federalTaxID)
         {
             if (party == null) return null;
@@ -282,6 +292,23 @@ namespace MinsaitToDDL.Lib.Parsers
                 PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
                 City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
                 Country = party.CountryID,
+            };
+        }
+
+        private static Models.Minsait.Common.Party MapDeliveryPlaceInformationReverse(Party party, string partyGLN, string federalTaxID)
+        {
+            if (party == null) return null;
+
+            return new Models.Minsait.Common.Party
+            {
+                EANCode = partyGLN,
+                //InternalCode = party.PartyID.HasValue ? party.PartyID.Value.ToString() : null,
+                //NIF = federalTaxID,
+                //Name = party.OrganizationName,
+                //Street = party.AddressLine1,
+                //PostalCode = Utilities.Utilities.ExtractPostalCode(party.PostalCode),
+                //City = Utilities.Utilities.ExtractTextAfterPostalCode(party.PostalCode),
+                //Country = party.CountryID,
             };
         }
 
@@ -339,24 +366,38 @@ namespace MinsaitToDDL.Lib.Parsers
             return list;
         }
 
-        private static Models.Minsait.Common.HeaderTaxes MapInvoiceHeaderTaxesReverse(IEnumerable<TaxValue> taxes)
+        private static List<SummaryTax> MapInvoiceSummaryTaxesReverse(IEnumerable<TaxValue> taxes)
         {
-            var headerTaxes = new Models.Minsait.Common.HeaderTaxes
-            {
-                HeaderTaxesHeader = new List<Models.Minsait.Common.HeaderTaxesHeader>()
-            };
-
-            if (taxes == null) return headerTaxes;
+            var list = new List<SummaryTax>();
+            if (taxes == null) return list;
 
             foreach (var t in taxes)
             {
-                headerTaxes.HeaderTaxesHeader.Add(new Models.Minsait.Common.HeaderTaxesHeader
+                list.Add(new SummaryTax
                 {
-                    TaxPercent = t.TaxRate
+                    TaxType = "IVA",
+                    TaxPercent = (decimal)t.TaxRate,
+                    TaxableAmount = (decimal)t.TotalNetChargeableAmount,
+                    TaxAmount = (decimal)t.TotalTaxAmount
                 });
             }
-            return headerTaxes;
 
+            return list;
+        }
+
+        private static decimal SumTaxes(IEnumerable<TaxValue> taxes)
+        {
+            decimal total = 0;
+
+            if (taxes == null)
+                return total;
+
+            foreach (var t in taxes)
+            {
+                total += (decimal)t.TotalTaxAmount;
+            }
+
+            return total;
         }
 
         #endregion
