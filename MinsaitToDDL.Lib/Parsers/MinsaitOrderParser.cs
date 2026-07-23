@@ -55,7 +55,7 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.OrderHeader.OrderDate))
                     .ForMember(d => d.ActualDeliveryDate,
                         o => o.MapFrom(s => s.OrderHeader.OtherOrderDates != null ? s.OrderHeader.OtherOrderDates.DeliveryDate : (DateTime?)null))
-                    .ForMember(d => d.ISignableTransactionTransactionID,
+                    .ForMember(d => d.ContractReferenceNumber,
                         o => o.MapFrom(s => s.OrderHeader.OrderNumber))
                     .ForMember(d => d.TotalGrossAmount,
                         o => o.MapFrom(s => s.OrderSummary.OrderTotals.NetValue))
@@ -106,7 +106,7 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForPath(d => d.OrderHeader.PaymentInstructions.PaymentTerm,
                         o => o.MapFrom(s => ((int)s.Payment.PaymentDays).ToString()))
                     .ForPath(d => d.OrderHeader.OrderNumber,
-                        o => o.MapFrom(s => s.ISignableTransactionTransactionID))
+                        o => o.MapFrom(s => s.ContractReferenceNumber))
                     .ForPath(d => d.OrderSummary.NumberOfLines,
                         o => o.MapFrom(s => s.Details.Count))
                     .ForPath(d => d.OrderSummary.OrderTotals.NetValue,

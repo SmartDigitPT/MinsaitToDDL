@@ -66,7 +66,7 @@ namespace MinsaitToDDL.Lib.Parsers
                         o => o.MapFrom(s => s.InvoiceHeader.InvoiceDate))
                     .ForMember(d => d.ActualDeliveryDate,
                         o => o.MapFrom(s => s.InvoiceHeader.OtherInvoiceDates != null ? s.InvoiceHeader.OtherInvoiceDates.DeliveryDate : (DateTime?)null))
-                    .ForMember(d => d.ISignableTransactionTransactionID,
+                    .ForMember(d => d.ContractReferenceNumber,
                         o => o.MapFrom(s => s.InvoiceHeader.InvoiceNumber))
                     .ForMember(d => d.TotalGrossAmount,
                         o => o.MapFrom(s => s.InvoiceSummary.InvoiceTotals.NetValue))
@@ -116,7 +116,7 @@ namespace MinsaitToDDL.Lib.Parsers
                     .ForPath(d => d.InvoiceHeader.InvoiceCurrency,
                         o => o.MapFrom(_ => "EUR"))
                     .ForPath(d => d.InvoiceHeader.InvoiceNumber,
-                        o => o.MapFrom(s => s.ISignableTransactionTransactionID))
+                        o => o.MapFrom(s => s.ContractReferenceNumber))
                     .ForPath(d => d.InvoiceSummary.NumberOfLines,
                         o => o.MapFrom(s => s.Details.Count))
                     .ForPath(d => d.InvoiceSummary.InvoiceTotals.NetValue,
